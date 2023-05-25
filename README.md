@@ -1,6 +1,8 @@
 # Milo自动化出报告系统
 
+## 🛠 作者
 
+谛Ⅸ
 
 ## 前言:
 
@@ -8,9 +10,11 @@
 
 从自己记录的文档查到出报告模板,漏洞模板,极其麻烦
 
-而这个系统(先说缺点,纯命令行,图片不好插,本人不会前端,纯粹狗屎),可以帮助各位在出报告时更据需求自定义模板,并且快速的输出所需要的内容
+而这个系统可以帮助各位在出报告时更据需求自定义模板,并且快速的输出所需要的内容
 
-![image-20230524154123321](D:\代码\python\图集\README\image-20230524154123321.png)
+设计思路主要是:读取用户输入,从用户输入中,读取到漏洞相关信息,进入漏洞库动态匹配,最后返回组成数据源,进行文档输出
+
+![image-20230524154123321](.\image-20230524154123321.png)
 
 ```shell
 -demo # 模板文件夹
@@ -21,15 +25,23 @@
 -main.py # 主函数文件
 ```
 
-## 环境
+## 安装环境
+
+* 纯python
 
 ```shell
 pip install docxtpl
 ```
 
+## 运行
 
+```
+python main.py
+```
 
-## 用户输入
+## 📦 使用手册
+
+### 用户输入
 
 ```python
 # 需要用户输入的内容(图片一类的之前是想着输入绝对路径读取的,后来想想太麻烦了,有那功夫直接复制粘贴好了)
@@ -43,14 +55,36 @@ ceshi_name = input("请输入测试项名称：")
     accesspoint = input("请输入测试接入点：3（互联网）、4（内网）")
     addr = input("测试项URL:")
     image_url = input("请输入漏洞验证图片地址：")
+# 这些都是需要用户输入的内容,基本包含了一份报告中所有有可能需要的东西,如果说,多了的话输入时候可以随便输入然后回车输入下一个,只要在模板中不做对应标记就不会输出。
 ```
 
 
 
 ## 模板制作
 
+```jinja2
+{{report_center}} # 客户单位
+{{report_systemname}} # 系统名称
+{{report_test_url}} #测试url(数组,输入时空格分隔)
+{{high_all}} # 所有高危漏洞(大数组,子集也是数组,所有高危漏洞,子数组可以参考vuls)
+{{middle_all}} # 所有中危漏洞(大数组,子集也是数组,所有中危漏洞,子数组可以参考vuls)
+{{low_all}} # 所有严重漏洞(大数组,子集也是数组,所有低危漏洞,子数组可以参考vuls)
+{{ceshi_all}} # 所有测试项(大数组,子集也是数组,所有测试项,子数组可以参考ceshis)
+{{count_addr}} #测试url计数
+{{count_vuls}} #总漏洞计数
+{{count_high}} #高危漏洞计数
+{{count_middle}} #中危漏洞计数
+{{count_low}} #低危漏洞计数
+{{level_result}} #最终系统评级
+{{vuls}} #漏洞集
+{{ceshis}} #测试项集
+```
+
+## 数据存储
+
 ```python
 # jinjia2是支持用户自定义模板的,本质还是关键字匹配只需要{{变量}}(用的库是docxptl,这个库集成了jinjia2,单纯用jinjia2,一直有编码问题无法解决。)
+# 漏洞相关内容
 vuls = {
             'vul_name':vul[0],
             'vul_accesspoint':vul_accesspoint,
@@ -61,13 +95,15 @@ vuls = {
             'vul_details':vul[7],
             'vul_harm':vul[8],
             'vul_repair':vul[9],
-ceshis = {
+# 测试项相关内容
+    ceshis = {
             'ceshi_name':ceshi[0],
             'ceshi_accesspoint':ceshi_accesspoint,
             'ceshi_url':ceshi[2],
             'ceshi_image':ceshi[3],
         }
-data = {
+# 保存将被替换索引的所有部分
+    data = {
         'report_center':report_center,
         'report_systemname':report_systemname,
         'report_test_url':report_test_url,
@@ -87,3 +123,18 @@ data = {
  # data段可以使用{{key}}的方式直接写进模板，ceshi以及vul段是数组，里面包含了字典，一个字典就是一个漏洞（测试项），要用到for这样一段的jinjia2模板语法，具体可以参照1.docx
 ```
 
+## 联系方式
+
+目前这只是第一版可能问题比较多,
+
+bug或者要是实在不太明白使用可以+v:ghust_xiagao
+
+## 后期规划
+
+后面可能会通过markdown模板读取的方式不再需要用户输入,而是通过文档读取的方式,更快速的输出报告
+
+## 参考
+
+https://github.com/Mustard404/Savior
+
+http://www.360doc.com/content/21/1130/10/77916720_1006517842.shtml
